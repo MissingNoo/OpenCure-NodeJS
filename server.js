@@ -23,7 +23,8 @@ var Network = Enum(
     "StartGame",
     "CreateRoom",
     "ListRooms",
-    "JoinRoom"
+    "JoinRoom",
+    "Disconnect"
 )
 
 function sendMessage(data, rinfo) {
@@ -221,6 +222,18 @@ server.on("message", function (msg, rinfo) {
                 command: Network.DestroyUpgrade,
                 upgID: _json['upgID'],
             }, rinfo['port'], _json['roomname']);
+            break;
+        
+        case Network.Disconnect:
+            if (rooms.length == 0) {return;}
+            for (var i = 0; i < rooms.length; ++i) {
+                    for (var j = 0; j < rooms[i]['players'].length; ++j) {
+                        if (rooms[i]['players'][j]['port'] == rinfo['port']) {
+                            console.log("User " + String(rinfo['port']) + " disconnected");
+                            rooms.splice(i, 1);
+                        }                        
+                    }
+                }
             break;
 
         default:
