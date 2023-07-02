@@ -263,6 +263,7 @@ server.on("message", function (msg, rinfo) {
             for (let index = 0; index < usertime.length; index++) {
                 if (usertime[index]['user'] == rinfo['port']) {
                     usertime[index]['lastaction'] = Math.floor(new Date().getTime() / 1000);
+                    usertime[index]['roomname'] = _json['roomname'];
                 }
                 
             }
@@ -344,3 +345,22 @@ setInterval(function(){
 server.bind(64198);
 console.log("Server Online!");
 timeout();
+
+var keypress = require('keypress');
+ 
+// make `process.stdin` begin emitting "keypress" events
+keypress(process.stdin);
+ 
+// listen for the "keypress" event
+process.stdin.on('keypress', function (ch, key) {
+    if (key && key.name == 'u') {
+        console.log(usertime);
+    }
+  //console.log('got "keypress"', key);
+  if (key && key.ctrl && key.name == 'c') {
+    process.kill(process.pid, 'SIGHUP');
+  }
+});
+ 
+process.stdin.setRawMode(true);
+process.stdin.resume();
