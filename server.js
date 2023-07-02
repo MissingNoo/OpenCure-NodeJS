@@ -1,9 +1,11 @@
+const { time } = require("console");
 var dgram = require("dgram");
 
 users = 0;
+usertime = [];
 maxusers = 0;
 const {
-    send
+    send, disconnect
 } = require("process");
 const {
     isArray
@@ -33,6 +35,7 @@ var Network = Enum(
     "Disconnect",
     "Connection",
     "UpdateRoom",
+    "KeepAlive",
 )
 
 function sendMessage(data, rinfo) {
@@ -59,9 +62,10 @@ server.on("message", function (msg, rinfo) {
     var _json = JSON.parse(msg);
     switch (_json['command']) {
         case Network.CreateRoom:
-            console.log("Creating room with name: " + _json['roomname'])
+            console.log("Creating room with name: " + _json['roomname'] + " and password: " + String(_json['password']));
             rooms[rooms.length] = {
                 name: _json['roomname'],
+		        password: _json['password'],
                 totalplayers: 0,
                 players: []
             };
@@ -233,57 +237,35 @@ server.on("message", function (msg, rinfo) {
             break;
 
         case Network.Disconnect:
-            for (var i = 0; i < rooms.length; ++i) {
-                for (var j = 0; j < rooms[i]['players'].length; ++j) {
-                    if (rooms[i]['players'][j]['port'] == rinfo['port']) {
-                        users--;
-                        console.log("User " + String(rinfo['port']) + " disconnected, " + String(users) + "/" + String(maxusers) + " total users online");
-                        rooms[i]['players'].splice(j, 1);
-                        rooms[i]['totalplayers'] -= 1;
-                        if (rooms[i]['totalplayers'] == 0) {
-                            if (rooms.length == 1) {
-                                rooms = [];
-                            } else {
-                                rooms.splice(i, 1);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            for (var i = 0; i < rooms.length; ++i) {
-                if (rooms[i]['name'] == _json['roomname']) {
-                    for (var j = 0; j < rooms[i]['players'].length; ++j) {
-                        var ishost = false;
-                        if (rooms[i]['players'][j]['port'] == rooms[i]['players'][0]['port']) {
-                            _ishost = true;
-                        } else {
-                            _ishost = false;
-                        }
-                        sendMessage({
-                            command: Network.UpdateRoom,
-                            roomname: rooms[i]['name'],
-                            players: JSON.stringify(rooms[i]['players']),
-                            isHost: _ishost
-                        }, {
-                            address: rooms[i]['players'][j]['address'],
-                            port: rooms[i]['players'][j]['port']
-                        });
-                    }
-                }
-            }
+            DisconnectPlayer(_json, rinfo);
             break;
 
         case Network.Connection:
+            usertime[usertime.length] = {
+                username : _json['username'],
+                user : rinfo['port'],
+                roomname : _json['roomname'],
+                lastaction : Math.floor(new Date().getTime() / 1000)
+            }
             users++;
             if (maxusers < users) {
                 maxusers = users;
             }
-            console.log("User " + String(rinfo['port']) + " connected, " + String(users) + "/" + String(maxusers) + " total users online");
+            console.log("User " + String(_json['username']) + " connected, " + String(users) + "/" + String(maxusers) + " total users online");
             break;
 
         case Network.UpdateRoom:
            
+            break;
+        
+        case Network.KeepAlive:
+            //console.log("KeepAlive from " + rinfo['port']);
+            for (let index = 0; index < usertime.length; index++) {
+                if (usertime[index]['user'] == rinfo['port']) {
+                    usertime[index]['lastaction'] = Math.floor(new Date().getTime() / 1000);
+                }
+                
+            }
             break;
 
         default:
@@ -292,5 +274,73 @@ server.on("message", function (msg, rinfo) {
 
 });
 
+function DisconnectPlayer(_json, rinfo) {
+    for (var i = 0; i < rooms.length; ++i) {
+        for (var j = 0; j < rooms[i]['players'].length; ++j) {
+            if (rooms[i]['players'][j]['port'] == rinfo['port']) {
+                users--;
+                rooms[i]['players'].splice(j, 1);
+                rooms[i]['totalplayers'] -= 1;
+                if (rooms[i]['totalplayers'] == 0) {
+                    if (rooms.length == 1) {
+                        rooms = [];
+                    } else {
+                        rooms.splice(i, 1);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    if (_json['roomname'] == '') {
+        users--;
+    }
+    for (var i = 0; i < rooms.length; ++i) {
+        if (rooms[i]['name'] == _json['roomname']) {
+            for (var j = 0; j < rooms[i]['players'].length; ++j) {
+                var ishost = false;
+                if (rooms[i]['players'][j]['port'] == rooms[i]['players'][0]['port']) {
+                    _ishost = true;
+                } else {
+                    _ishost = false;
+                }
+                sendMessage({
+                    command: Network.UpdateRoom,
+                    roomname: rooms[i]['name'],
+                    players: JSON.stringify(rooms[i]['players']),
+                    isHost: _ishost
+                }, {
+                    address: rooms[i]['players'][j]['address'],
+                    port: rooms[i]['players'][j]['port']
+                });
+            }
+        }
+    }
+    for (let index = 0; index < usertime.length; index++) {
+        if (usertime[index]['user'] == rinfo['port']) {
+            console.log("User " + String(usertime[index]['username']) + " disconnected, " + String(users) + "/" + String(maxusers) + " total users online");
+            usertime.splice(index, 1);            
+        }        
+    }
+}
+
+function timeout(){
+    for (let index = 0; index < usertime.length; index++) {
+        let now = Math.floor(new Date().getTime() / 1000);
+        let last = usertime[index]['lastaction'];
+        //console.log(now - last);
+        if (now - last > 30) {
+            DisconnectPlayer({roomname : usertime[index]['roomname']}, { port : usertime[index]['user']});
+            //TODO: return player to start screen
+        }
+        //else{console.log(now - usertime[index]['lastaction']);}
+        
+    }
+}
+
+setInterval(function(){
+    timeout()}, 30000)
+
 server.bind(64198);
 console.log("Server Online!");
+timeout();
