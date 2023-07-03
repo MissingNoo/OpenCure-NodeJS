@@ -1,11 +1,14 @@
-const { time } = require("console");
+const {
+    time
+} = require("console");
 var dgram = require("dgram");
 
 users = 0;
 usertime = [];
 maxusers = 0;
 const {
-    send, disconnect
+    send,
+    disconnect
 } = require("process");
 const {
     isArray
@@ -65,7 +68,7 @@ server.on("message", function (msg, rinfo) {
             console.log("Creating room with name: " + _json['roomname'] + " and password: " + String(_json['password']));
             rooms[rooms.length] = {
                 name: _json['roomname'],
-		        password: _json['password'],
+                password: _json['password'],
                 totalplayers: 0,
                 players: []
             };
@@ -242,10 +245,10 @@ server.on("message", function (msg, rinfo) {
 
         case Network.Connection:
             usertime[usertime.length] = {
-                username : _json['username'],
-                user : rinfo['port'],
-                roomname : _json['roomname'],
-                lastaction : Math.floor(new Date().getTime() / 1000)
+                username: _json['username'],
+                user: rinfo['port'],
+                roomname: _json['roomname'],
+                lastaction: Math.floor(new Date().getTime() / 1000)
             }
             users++;
             if (maxusers < users) {
@@ -255,9 +258,9 @@ server.on("message", function (msg, rinfo) {
             break;
 
         case Network.UpdateRoom:
-           
+
             break;
-        
+
         case Network.KeepAlive:
             //console.log("KeepAlive from " + rinfo['port']);
             for (let index = 0; index < usertime.length; index++) {
@@ -265,7 +268,7 @@ server.on("message", function (msg, rinfo) {
                     usertime[index]['lastaction'] = Math.floor(new Date().getTime() / 1000);
                     usertime[index]['roomname'] = _json['roomname'];
                 }
-                
+
             }
             break;
 
@@ -279,7 +282,7 @@ function DisconnectPlayer(_json, rinfo) {
     for (var i = 0; i < rooms.length; ++i) {
         for (var j = 0; j < rooms[i]['players'].length; ++j) {
             if (rooms[i]['players'][j]['port'] == rinfo['port']) {
-                users--;
+                //users--;
                 rooms[i]['players'].splice(j, 1);
                 rooms[i]['totalplayers'] -= 1;
                 if (rooms[i]['totalplayers'] == 0) {
@@ -293,9 +296,9 @@ function DisconnectPlayer(_json, rinfo) {
             }
         }
     }
-    if (_json['roomname'] == '') {
-        users--;
-    }
+    //if (_json['roomname'] == '') {
+    //users--;
+    //}
     for (var i = 0; i < rooms.length; ++i) {
         if (rooms[i]['name'] == _json['roomname']) {
             for (var j = 0; j < rooms[i]['players'].length; ++j) {
@@ -319,48 +322,57 @@ function DisconnectPlayer(_json, rinfo) {
     }
     for (let index = 0; index < usertime.length; index++) {
         if (usertime[index]['user'] == rinfo['port']) {
+            users--;
+            if (users < 0) {
+                users = 0;
+            }
             console.log("User " + String(usertime[index]['username']) + " disconnected, " + String(users) + "/" + String(maxusers) + " total users online");
-            usertime.splice(index, 1);            
-        }        
+            usertime.splice(index, 1);
+        }
     }
 }
 
-function timeout(){
+function timeout() {
     for (let index = 0; index < usertime.length; index++) {
         let now = Math.floor(new Date().getTime() / 1000);
         let last = usertime[index]['lastaction'];
         //console.log(now - last);
         if (now - last > 30) {
-            DisconnectPlayer({roomname : usertime[index]['roomname']}, { port : usertime[index]['user']});
+            DisconnectPlayer({
+                roomname: usertime[index]['roomname']
+            }, {
+                port: usertime[index]['user']
+            });
             //TODO: return player to start screen
         }
         //else{console.log(now - usertime[index]['lastaction']);}
-        
+
     }
 }
 
-setInterval(function(){
-    timeout()}, 30000)
+setInterval(function () {
+    timeout()
+}, 30000)
 
 server.bind(64198);
 console.log("Server Online!");
 timeout();
 
 var keypress = require('keypress');
- 
+
 // make `process.stdin` begin emitting "keypress" events
 keypress(process.stdin);
- 
+
 // listen for the "keypress" event
 process.stdin.on('keypress', function (ch, key) {
     if (key && key.name == 'u') {
         console.log(usertime);
     }
-  //console.log('got "keypress"', key);
-  if (key && key.ctrl && key.name == 'c') {
-    process.kill(process.pid, 'SIGHUP');
-  }
+    //console.log('got "keypress"', key);
+    if (key && key.ctrl && key.name == 'c') {
+        process.kill(process.pid, 'SIGHUP');
+    }
 });
- 
+
 process.stdin.setRawMode(true);
 process.stdin.resume();
