@@ -83,7 +83,8 @@ server.on("message", function (msg, rinfo) {
         case Network.ListRooms:
             sendMessage({
                 command: Network.ListRooms,
-                rooms: rooms
+                rooms: rooms,
+                socket : rinfo['port']
             }, rinfo);
             break;
 
