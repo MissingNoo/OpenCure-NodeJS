@@ -39,6 +39,8 @@ var Network = Enum(
     "Connection",
     "UpdateRoom",
     "KeepAlive",
+    "UpdateOptions",
+    "ShareXP",
 )
 
 function sendMessage(data, rinfo) {
@@ -214,7 +216,9 @@ server.on("message", function (msg, rinfo) {
         case Network.Destroy:
             sendMessageRoom({
                 command: Network.Destroy,
-                enemyID: _json['enemyID']
+                enemyID: _json['enemyID'],
+                //drop : _json['drop']
+                owner : rinfo['port']
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -270,6 +274,23 @@ server.on("message", function (msg, rinfo) {
                 }
 
             }
+            break;
+
+        case Network.UpdateOptions:
+            sendMessageRoom({
+                command: Network.UpdateOptions,
+                option: _json['option'],
+                value: _json['value'],
+                roomname: _json['roomname']
+            }, rinfo['port'], _json['roomname']);
+            break;
+
+        case Network.ShareXP:
+            sendMessageRoom({
+                command: Network.ShareXP,
+                xp : _json['xp'],
+                roomname: _json['roomname']
+            }, rinfo['port'], _json['roomname']);
             break;
 
         default:
