@@ -41,6 +41,7 @@ var Network = Enum(
     "KeepAlive",
     "UpdateOptions",
     "ShareXP",
+    "ChatMessage",
 )
 
 function sendMessage(data, rinfo) {
@@ -291,6 +292,14 @@ server.on("message", function (msg, rinfo) {
                 command: Network.ShareXP,
                 xp : _json['xp'],
                 roomname: _json['roomname']
+            }, rinfo['port'], _json['roomname']);
+            break;
+
+        case Network.ChatMessage:
+            sendMessageRoom({
+                command: Network.ChatMessage,
+                text : _json['text'],
+                username : _json['username']
             }, rinfo['port'], _json['roomname']);
             break;
 
