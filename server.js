@@ -42,6 +42,8 @@ var Network = Enum(
     "UpdateOptions",
     "ShareXP",
     "ChatMessage",
+    "SpawnAnvil",
+    "UpdateAnvil",
 )
 
 function sendMessage(data, rinfo) {
@@ -77,6 +79,7 @@ server.on("message", function (msg, rinfo) {
             };
             sendMessage({
                 command: Network.ListRooms,
+                socket : rinfo['port'],
                 rooms: rooms
             }, rinfo);
             break;
@@ -85,7 +88,7 @@ server.on("message", function (msg, rinfo) {
             sendMessage({
                 command: Network.ListRooms,
                 rooms: rooms,
-                socket : rinfo['port']
+                socket: rinfo['port']
             }, rinfo);
             break;
 
@@ -202,7 +205,8 @@ server.on("message", function (msg, rinfo) {
                 //speed : _json['speed'],
                 //sendvars : _json['sendvars'],
                 //upg : _json['upg'],
-                upgID: _json['upgID']
+                upgID: _json['upgID'],
+                haveafterimage : _json['haveafterimage']
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -220,7 +224,7 @@ server.on("message", function (msg, rinfo) {
                 command: Network.Destroy,
                 enemyID: _json['enemyID'],
                 //drop : _json['drop']
-                owner : rinfo['port']
+                owner: rinfo['port']
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -235,6 +239,9 @@ server.on("message", function (msg, rinfo) {
                 direction: _json['direction'],
                 image_angle: _json['image_angle'],
                 image_alpha: _json['image_alpha'],
+                image_xscale: _json['image_xscale'],
+                image_yscale: _json['image_yscale'],
+                afterimg : _json['afterimg'],
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -290,7 +297,7 @@ server.on("message", function (msg, rinfo) {
         case Network.ShareXP:
             sendMessageRoom({
                 command: Network.ShareXP,
-                xp : _json['xp'],
+                xp: _json['xp'],
                 roomname: _json['roomname']
             }, rinfo['port'], _json['roomname']);
             break;
@@ -298,8 +305,27 @@ server.on("message", function (msg, rinfo) {
         case Network.ChatMessage:
             sendMessageRoom({
                 command: Network.ChatMessage,
-                text : _json['text'],
-                username : _json['username']
+                text: _json['text'],
+                username: _json['username']
+            }, rinfo['port'], _json['roomname']);
+            break;
+
+        case Network.SpawnAnvil:
+            sendMessageRoom({
+                command: Network.SpawnAnvil,
+                owner : rinfo['port'],
+                x: _json['x'],
+                y: _json['y'],
+                anvilid: _json['anvilid'],
+                maxuses: _json['maxuses']
+            }, rinfo['port'], _json['roomname']);
+            break;
+
+        case Network.UpdateAnvil:
+            sendMessageRoom({
+                command: Network.UpdateAnvil,
+                anvilid: _json['anvilid'],
+                maxuses: _json['maxuses']
             }, rinfo['port'], _json['roomname']);
             break;
 
