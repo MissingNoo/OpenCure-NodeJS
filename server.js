@@ -44,6 +44,7 @@ var Network = Enum(
     "ChatMessage",
     "SpawnAnvil",
     "UpdateAnvil",
+    "AddItem"
 )
 
 function sendMessage(data, rinfo) {
@@ -414,7 +415,7 @@ setInterval(function () {
 server.bind(64198);
 console.log("Server Online!");
 timeout();
-
+/*
 var keypress = require('keypress');
 
 // make `process.stdin` begin emitting "keypress" events
@@ -432,4 +433,4 @@ process.stdin.on('keypress', function (ch, key) {
 });
 
 process.stdin.setRawMode(true);
-process.stdin.resume();
+process.stdin.resume();*/
