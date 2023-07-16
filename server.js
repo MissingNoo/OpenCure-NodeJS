@@ -80,7 +80,7 @@ server.on("message", function (msg, rinfo) {
             };
             sendMessage({
                 command: Network.ListRooms,
-                socket : rinfo['port'],
+                socket: rinfo['port'],
                 rooms: rooms
             }, rinfo);
             break;
@@ -207,7 +207,7 @@ server.on("message", function (msg, rinfo) {
                 //sendvars : _json['sendvars'],
                 //upg : _json['upg'],
                 upgID: _json['upgID'],
-                haveafterimage : _json['haveafterimage']
+                haveafterimage: _json['haveafterimage']
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -242,7 +242,7 @@ server.on("message", function (msg, rinfo) {
                 image_alpha: _json['image_alpha'],
                 image_xscale: _json['image_xscale'],
                 image_yscale: _json['image_yscale'],
-                afterimg : _json['afterimg'],
+                afterimg: _json['afterimg'],
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -314,7 +314,7 @@ server.on("message", function (msg, rinfo) {
         case Network.SpawnAnvil:
             sendMessageRoom({
                 command: Network.SpawnAnvil,
-                owner : rinfo['port'],
+                owner: rinfo['port'],
                 x: _json['x'],
                 y: _json['y'],
                 anvilid: _json['anvilid'],
@@ -327,6 +327,16 @@ server.on("message", function (msg, rinfo) {
                 command: Network.UpdateAnvil,
                 anvilid: _json['anvilid'],
                 maxuses: _json['maxuses']
+            }, rinfo['port'], _json['roomname']);
+            break;
+
+        case Network.AddItem:
+            sendMessageRoom({
+                command: Network.AddItem,
+                type: _json['type'],
+                id: _json['id'],
+                level: _json['level'],
+                pos: _json['pos']
             }, rinfo['port'], _json['roomname']);
             break;
 
@@ -415,7 +425,7 @@ setInterval(function () {
 server.bind(64198);
 console.log("Server Online!");
 timeout();
-/*
+
 var keypress = require('keypress');
 
 // make `process.stdin` begin emitting "keypress" events
@@ -433,4 +443,4 @@ process.stdin.on('keypress', function (ch, key) {
 });
 
 process.stdin.setRawMode(true);
-process.stdin.resume();*/
+process.stdin.resume();
