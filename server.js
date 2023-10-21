@@ -44,7 +44,8 @@ var Network = Enum(
     "ChatMessage",
     "SpawnAnvil",
     "UpdateAnvil",
-    "AddItem"
+    "AddItem",
+    "InfectMob"
 )
 
 function sendMessage(data, rinfo) {
@@ -337,6 +338,14 @@ server.on("message", function (msg, rinfo) {
                 id: _json['id'],
                 level: _json['level'],
                 pos: _json['pos']
+            }, rinfo['port'], _json['roomname']);
+            break;       
+
+        case Network.InfectMob:
+            sendMessageRoom({
+                command: Network.InfectMob,
+                id: _json['id'],
+                target : _json['target']
             }, rinfo['port'], _json['roomname']);
             break;
 
