@@ -345,7 +345,9 @@ server.on("message", function (msg, rinfo) {
             sendMessageRoom({
                 command: Network.InfectMob,
                 id: _json['id'],
-                target : _json['target']
+                target : _json['target'],
+                hp : _json['hp'], 
+                baseSPD : _json['baseSPD']
             }, rinfo['port'], _json['roomname']);
             break;
 
