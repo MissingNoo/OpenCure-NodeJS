@@ -183,6 +183,7 @@ server.on("message", function (msg, rinfo) {
                                 x: _json['x'],
                                 y: _json['y'],
                                 sprite: _json['sprite'],
+                                spd : _json['spd'],
                                 image_xscale: _json['image_xscale'],
                                 socket: rooms[i]['players'][j]['port']
                             }, {
