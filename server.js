@@ -245,7 +245,6 @@ server.on("message", function (msg, rinfo) {
                 image_xscale: _json['image_xscale'],
                 image_yscale: _json['image_yscale'],
                 afterimg: _json['afterimg'],
-                extraInfo : _json['extraInfo']
             }, rinfo['port'], _json['roomname']);
             break;
 
