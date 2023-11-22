@@ -208,7 +208,7 @@ server.on("message", function (msg, rinfo) {
                 //sendvars : _json['sendvars'],
                 //upg : _json['upg'],
                 upgID: _json['upgID'],
-                haveafterimage: _json['haveafterimage'],
+                //haveafterimage: _json['haveafterimage'],
                 extraInfo : _json['extraInfo']
             }, rinfo['port'], _json['roomname']);
             break;
